@@ -1,0 +1,266 @@
+@startuml
+skinparam style strictuml
+skinparam classAttributeIconSize 0
+hide enum methods
+
+package Controllers
+{
+    class ControllerJeu
+    {
+        - nb_chances : Integer
+        - nb_pion_combinaison : Integer
+        - nb_pions_dispos : Integer
+        + ControllerJeu(manche : Manche, nb_pion_combinaison : Integer, nb_chances : Integer, nb_pions_dispos : Integer, mode : StrategyMode, plateau : Plateau)
+        + getManche() : Manche
+        + getNomJoueur() : String
+        + modificationPion(index : Integer)
+        + getScore() : Integer
+        + getNbPionCombinaison() : Integer
+        + getNbChance() : Integer
+        + validerTentative()
+        + nouvelleManche()
+        + reinitialiserTentativeCourante()
+
+    }
+    class ControllerGlobal
+    {
+        + ControllerGlobal(plateau : Plateau)
+        + setNomJoueur(nom : String)
+        + setClassique()
+        + setNumerique()
+        + setFacile()
+        + setNbTentatives(nb : Integer)
+        + setNbManche(nb : Integer)
+        + setPionsDispo(nb : Integer)
+        + setPionsCombi(nb : Integer)
+        + GetPlateau() : Plateau
+        + nouvelleManche()
+    }
+}
+
+package Models
+{
+    enum PION
+    {
+        VERT
+        BLEU
+        ROSE
+        ROUGE
+        JAUNE
+        GRIS
+        CYAN
+        MARRON
+        VIDE
+    }
+
+    enum INDICE
+    {
+        BIEN_PLACE
+        MAL_PLACE
+        VIDE
+    }
+
+    interface ObserverManche <<interface>>
+    {
+        + majPlateauValidationTentative(Combinaison[*] tentatives, LigneIndice[*] indices_tentatives, mode : StrategyMode)
+        + majPlateauPion(combinaison : Combinaison)
+    }
+
+    class Combinaison
+    {
+        - nb_pions_combis : Integer
+        + Combinaison(nb_pions_combis : Integer)
+        + Combinaison(combinaison : Combinaison)
+        + choixCouleur(pions : PION, index : Integer)
+        + setCombinaisonSecrete(nb_pions_dispos : Integer)
+        + getPion(index : Integer) : PION
+        + getCount() : Integer
+        + remplir(nb_pion_combinaison : Integer)
+        + getPions() : PIONS[*]
+        + affichageCombi()
+    }
+
+    class Joueur
+    {
+        - nom : String
+        - nbParties : Integer
+        + ajouterNbPartie()
+        + getNom() : String
+        + setNom(nom : String)
+    }
+
+    class LigneIndice
+    {
+        - nb_pion_combis : Integer
+        - score_mal_place : Integer
+        - score_bien_place : Integer
+        - typeAffichage : Integer
+        + LigneIndice(ligneIndice : LigneIndice)
+        + LigneIndice(nb_pions_combis : Integer)
+        + getTypeAffichage() : Integer
+        + GetScoreIndice() : Integer
+        + setIndice(combinaison_joueur : Combinaison, combinaison_secrete : Combinaison)
+        + getLigneIndice() : INDICE[4..6]
+        + getNb_pion_combis() : Integer
+        + resetLigne()
+        + afficheLigneIndice()
+    }
+
+    class Partie
+    {
+        - nb_manches : Integer
+        - score_partie : Integer
+        - nb_pions_dispos : Integer
+        - nb_tentatives : Integer
+        - nb_pions_combis : Integer
+        + SetScore(score_manche : Integer)
+        + GetScore : Integer
+        + creerPartie(mode : StrategyMode, plateau Plateau)
+        + setPionsDispo(nb : Integer)
+        + setNbManches(nb : Integer)
+        + setPionsCombi(nb : Integer)
+        + setNbTentatives(nb : Integer)
+    }
+
+    class Manche
+    {
+        - nb_pions_combis : Integer
+        - score : Integer
+        + Manche(nb_pions_combis : Manche, nb_pions_dispo : Manche)
+        + SetMode(mode : StrategyMode)
+        + ajouterObserver(observer_manche : ObserverManche)
+        + notifierChangementAffichageTentativeCourante()
+        + notifierChangementAffichageValidationTentative()
+        + ValiderCombinaison()
+        + reinitiliserCombinaisonCourante()
+        + changementCouleurPion(index : Integer)
+        + GetScore() : Integer
+        + prochaineCouleur(pion : PION) : PION
+        + getVictoireDefaite() : Boolean
+    }
+
+    class Plateau
+    {
+        + nouvellePartie(nom_joueur : String)
+        + creerPartie()
+        + setNomJoueur(nom : String)
+        + getNomJoueur() : String
+        + getPartie() : Partie
+        + setNomJoueur(nom : String)
+    }
+}
+
+package View
+{
+    class FactoryMode
+    {
+        + CreateClassique()
+        + CreateFacile()
+        + CreateNumerique()
+    }
+    interface StrategyMode <<interface>>
+    {
+        + AfficherIndice(ligne_indice : LigneIndice, Jpanel panel)
+    }
+
+    class Classique implements StrategyMode
+    {
+        + AfficherIndice(ligne_indice : LigneIndice, Jpanel panel)
+        + couleurDeIndice(indice : INDICE) : Color
+    }
+
+    class Facile implements StrategyMode
+    {
+        + AfficherIndice(ligne_indice : LigneIndice, Jpanel panel)
+        + couleurDeIndice(indice : INDICE) : Color
+    }
+
+    class Numerique implements StrategyMode
+    {
+        - nb_pions_bien_places : Integer
+        - nb_pions_mal_places : Integer
+        - indices_actu : INDICE[4..6]
+        - indices_nouv : INDICE[4..6]
+        + AfficherIndice(ligne_indice : LigneIndice, Jpanel panel)
+    }
+    class Demarrage
+    {
+        - indiceParametre : Integer
+        - valeurParametre : Integer
+        + Demarrage(plateau : Plateau)
+        + majParamValeurs(controleurDemarrage : ControllerGlobal, labelNomParam : JLabel, labelValParam : JLabel)
+        + incrementerParametre(controleurDemarrage : ControllerGlobal, labelNomParam : JLabel, labelValParam : JLabel)
+    }
+
+    class Jeu
+    {
+        - combinaison : JLabel[*]
+        - combinaisonJouee : JLabel[*]
+        - ligneIndiceJouee : JLabel[*]
+        - combinaisonJoueActu : Integer
+        - ligneIndiceJoueActu : Integer
+        + Jeu(control_jeu : ControllerJeu)
+        + majPlateauValidationTentative(Combinaison[*] tentatives, LigneIndice[*] indices_tentatives, mode : StrategyMode)
+        + majPlateauPion(combinaison : Combinaison)
+        + couleurDuPion(pion : PION) : Color
+        + nouvelleManche()
+        + getThis() : Jeu
+    }
+
+    class FinPartie
+    {
+        FinPartie(score : Integer, aGagne : Boolean)
+    }
+}
+
+class MainMastermind
+{
+    + {static}main(args: String)
+}
+
+MainMastermind ..> Plateau :<<uses>>
+MainMastermind ..> Demarrage :<<uses>>
+MainMastermind ..> FinPartie :<<uses>>
+MainMastermind ..> Jeu :<<uses>>
+MainMastermind ..> ControllerJeu :<<uses>>
+MainMastermind ..> ControllerGlobal :<<uses>>
+
+FactoryMode ..> Classique :<<uses>>
+FactoryMode ..> Facile :<<uses>>
+FactoryMode ..> Numerique :<<uses>>
+
+Plateau o--> "1\n - partie" Partie : > contient
+Plateau o--> "1\n - joueur" Joueur : < joue
+
+Partie o--> "3..5\n- manche "  Manche : > contient
+
+Jeu ..|> ObserverManche
+
+
+
+Manche o--> "1\n- observer " ObserverManche  : < observe
+Manche *--> "10..12\n- tentatives "  Combinaison : > possède
+Manche o--> "10..12\n- indices_tentatives "  LigneIndice : > contient
+Manche o--> "1\n- ligne_indice "  LigneIndice : > contient
+Manche *--> "1\n- combinaison_secrete "  Combinaison : > possède
+Manche *--> "1\n- combinaison_courante "  Combinaison : > possède
+Manche *--> "1\n- mode "  StrategyMode : > possède
+
+FactoryMode ..> StrategyMode :<<uses>>
+
+LigneIndice o--> "4..6\n- ligne_indice "  INDICE : > contient
+Combinaison o--> "4..6\n- pions "  PION : > contient
+
+ControllerGlobal *--> "1\n - plateau" Plateau : > possède
+ControllerGlobal o--> "1\n- mode "  StrategyMode : > contient
+ControllerGlobal *--> "1\n - factoryMode" FactoryMode : > possède
+
+ControllerJeu *--> "1\n - plateau" Plateau : > possède
+ControllerJeu *--> "1\n - manche" Manche : > possède
+ControllerJeu *--> "1\n - mode" StrategyMode : > possède
+
+Demarrage ..> ControllerGlobal :<<uses>>
+FinPartie ..> ControllerGlobal :<<uses>>
+Jeu ..> ControllerGlobal :<<uses>>
+
+@enduml
